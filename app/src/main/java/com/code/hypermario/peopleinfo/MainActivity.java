@@ -1,10 +1,12 @@
 package com.code.hypermario.peopleinfo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -13,6 +15,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.code.hypermario.peopleinfo.R;
+import com.code.hypermario.peopleinfo.recyclerview.FeedListActivity;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -27,11 +30,13 @@ import com.facebook.login.widget.LoginButton;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-
-
+import java.util.Calendar;
 
 
 public class MainActivity extends Activity {
@@ -42,6 +47,7 @@ public class MainActivity extends Activity {
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     String user_id="dead";
+    Intent localIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +102,7 @@ public class MainActivity extends Activity {
 
         //AccessToken accessToken = new DefaultFacebookClient().obtainAppAccessToken(app_id, secret_pass);
         final AccessToken token = new AccessToken(access,app_id,user_id,null,null,null,null,null);
+        localIntent = new Intent(this,FeedListActivity.class);
 
         this.btnStartLocationUpdates.setOnClickListener(new View.OnClickListener() {
             public void onClick(View paramAnonymousView) {
@@ -107,25 +114,12 @@ public class MainActivity extends Activity {
                         new GraphRequest.Callback() {
                             @Override
                             public void onCompleted(GraphResponse response) {
-                                System.out.println("**** "+response.toString());
-                                try {
-                                    JSONObject jso = response.getJSONObject();
-                                    JSONArray arr = jso.getJSONArray("data");
+                                //FeedListActivity feed = new FeedListActivity(response);
+                                //feed.feedlistPresent();
 
-                                    for (int i = 0; i < (arr.length()); i++) {
-                                        JSONObject json_obj = arr.getJSONObject(i);
+                                writeIDandName(response);
 
-                                        String id = json_obj.getString("id");
-                                        String name = json_obj.getString("name");
-                                        //String urlImg = json_obj.getString("pic_square");
-
-                                        System.out.println("**** ID = " + id + " name = " + name);
-                                        search_info.append("ID = " + id + " name = " + name+"\n");
-
-                                    }
-                                } catch (Throwable t) {
-                                    t.printStackTrace();
-                                }
+                                startActivity(localIntent);
                             }
                         });
 
@@ -228,5 +222,51 @@ public class MainActivity extends Activity {
         }
         catch (PackageManager.NameNotFoundException e){}
         catch (NoSuchAlgorithmException e){}
+    }
+
+
+    public void writeIDandName(GraphResponse response)
+    {
+        String str2 = null;
+        File localFile = new File(getFilesDir(), "idandname.txt");
+        if (!localFile.exists()) {
+            try {
+                localFile.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("**** "+response.toString());
+        try {
+            JSONObject jso = response.getJSONObject();
+            JSONArray arr = jso.getJSONArray("data");
+
+            for (int i = 0; i < (arr.length()); i++) {
+                JSONObject json_obj = arr.getJSONObject(i);
+
+                String id = json_obj.getString("id");
+                String name = json_obj.getString("name");
+
+                str2 = str2 + new String(id+";"+name+"\n");
+                System.out.println("**** ID = " + id + " name = " + name);
+
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+
+        try{
+            FileOutputStream localFileOutputStream = openFileOutput("idandname.txt", Context.MODE_PRIVATE);
+            localFileOutputStream.write(str2.getBytes());
+            localFileOutputStream.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

@@ -15,7 +15,6 @@ import android.view.View;
 
 import com.code.hypermario.peopleinfo.R;
 
-import com.facebook.GraphResponse;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.BufferedReader;
@@ -35,12 +34,6 @@ public class FeedListActivity extends AppCompatActivity implements AppBarLayout.
   private RecyclerView mRecyclerView;
   private SwipeRefreshLayout mSwipeRefreshLayout;
   private AppBarLayout appBarLayout;
-  GraphResponse response;
-
-  public FeedListActivity(GraphResponse response1)
-  {
-    response = response1;
-  }
   
   private void parseResult(LinkedList<String> paramLinkedList)
   {
@@ -50,15 +43,13 @@ public class FeedListActivity extends AppCompatActivity implements AppBarLayout.
     for(String elem : paramLinkedList)
     {
       String[] arrayOfString = elem.split(";");
-      if(arrayOfString.length < 3) break;
-      String str1 = arrayOfString[0];
-      String str2 = arrayOfString[1];
-      String str3 = arrayOfString[2];
-      String str4 = "Latitude : " + str1 + "\nLongitude : " + str2;
-      System.out.println("***" + str3 + " " + str1 + " " + str2);
+      if(arrayOfString.length < 2) break;
+      String id = arrayOfString[0];
+      String name = arrayOfString[1];
+
       FeedItem localFeedItem = new FeedItem();
-      localFeedItem.setTitle(str3+"\n"+str4);
-      localFeedItem.setThumbnail("Latitude : " + str1 + " Longitude : " + str2);
+      localFeedItem.setTitle(id+"\n"+name);
+      localFeedItem.setThumbnail("ID : " + id + " NAME : " + name);
       this.feedItemList.add(localFeedItem);
       System.out.println("***Inserted");
     }
@@ -98,14 +89,14 @@ public class FeedListActivity extends AppCompatActivity implements AppBarLayout.
         mSwipeRefreshLayout.setRefreshing(false);
         feedItemList = new ArrayList();
         list_string = new LinkedList();
-        new AsyncHttpTask().execute(new String[]{"parking_locations.txt"});
+        new AsyncHttpTask().execute(new String[]{"idandname.txt"});
       }
     });
 
     appBarLayout = (AppBarLayout) findViewById(R.id.appBarLayout);
 
 
-    File localFile = new File(getFilesDir(), "parking_locations.txt");
+    File localFile = new File(getFilesDir(), "idandname.txt");
     if (!localFile.exists()) {
       try {
         localFile.createNewFile();
@@ -114,57 +105,7 @@ public class FeedListActivity extends AppCompatActivity implements AppBarLayout.
         localIOException.printStackTrace();
       }
     }
-    new AsyncHttpTask().execute(new String[]{"parking_locations.txt"});
-  }
-
-  public void feedlistPresent()
-  {
-    setContentView(R.layout.activity_history);
-    this.mRecyclerView = ((RecyclerView)findViewById(R.id.recycler_view));
-    mRecyclerView.addItemDecoration(
-            new HorizontalDividerItemDecoration.Builder(this)
-                    .color(Color.rgb(89,211,225))
-                    .sizeResId(R.dimen.cardview_compat_inset_shadow)
-                    .marginResId(R.dimen.activity_horizontal_margin, R.dimen.activity_horizontal_margin)
-                    .build());
-    this.mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-    this.mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
-      public void onItemClick(View paramAnonymousView, int paramAnonymousInt) {
-        System.out.println("//**//" + paramAnonymousInt + "//**//");
-        String[] arrayOfString = FeedListActivity.this.returnLatLong(paramAnonymousInt, FeedListActivity.this.list_string);
-        System.out.println("//**//" + arrayOfString[0] + " " + arrayOfString[1] + "//**//");
-        Intent localIntent = new Intent("android.intent.action.VIEW", Uri.parse("geo:0,0?q=" + arrayOfString[0] + "," + arrayOfString[1]));
-        localIntent.setPackage("com.google.android.apps.maps");
-        FeedListActivity.this.startActivity(localIntent);
-      }
-    }));
-
-
-    mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.contentView);
-    mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
-    mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-      @Override
-      public void onRefresh() {
-        mSwipeRefreshLayout.setRefreshing(false);
-        feedItemList = new ArrayList();
-        list_string = new LinkedList();
-        new AsyncHttpTask().execute(new String[]{"parking_locations.txt"});
-      }
-    });
-
-    appBarLayout = (AppBarLayout) findViewById(R.id.appBarLayout);
-
-
-    File localFile = new File(getFilesDir(), "parking_locations.txt");
-    if (!localFile.exists()) {
-      try {
-        localFile.createNewFile();
-        return;
-      } catch (IOException localIOException) {
-        localIOException.printStackTrace();
-      }
-    }
-    new AsyncHttpTask().execute(new String[]{"parking_locations.txt"});
+    new AsyncHttpTask().execute(new String[]{"idandname.txt"});
   }
 
   @Override
@@ -239,7 +180,7 @@ public class FeedListActivity extends AppCompatActivity implements AppBarLayout.
         localException.printStackTrace();
         return localInteger;
       }
-      Collections.reverse(list_string);
+      //Collections.reverse(list_string);
       System.out.println("***Reverse the LIST");
       parseResult(list_string);
       System.out.println("***Parsed the LIST");
