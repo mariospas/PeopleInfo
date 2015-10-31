@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">People Info</string>
+    <string name="facebook_app_id">873854049349423</string>
+    <string name="secret_pass">14fe5483912cb054d9988e54a2e812f7</string>
+    <string name="access">873854049349423|0ahRwXBQdIncvI8tgSra5LWE-V0</string>
 </resources>
